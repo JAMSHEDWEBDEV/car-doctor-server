@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -28,12 +28,44 @@ async function run() {
     await client.connect();
 
     const serviceCollection = client.db('carDoctor').collection('services');
+    const bookingCollection = client.db('carDoctor').collection('bookings');
      
-    // get/read data from database and show client side services 
+    // get/read data from database and show client side services  
     app.get('/services', async(req,res)=>{
         const cursor = serviceCollection.find();
         const result = await cursor.toArray();
         res.send(result);
+    })
+
+    // specific data get from database 
+    app.get('/services/:id', async(req,res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)};
+      const options = {
+        // Include only the `title` and `imdb` fields in the returned document
+        projection: { _id: 0, title: 1, price: 1, img:1 },
+      };
+      const result = await serviceCollection.findOne(query,options);
+      res.send(result);
+    })
+    // get booking data from database 
+    app.get('/bookings', async(req,res)=>{
+      console.log(req.query.customerEmail);
+      let query = {};
+      if(req.query?.customerEmail){
+        query = {customerEmail:req.query.customerEmail}
+      }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+
+    })
+
+    // post bookings data in database 
+    app.post('/bookings', async(req,res)=>{
+         const booking = req.body;
+         console.log(booking);
+         const result = await bookingCollection.insertOne(booking);
+         res.send(result);
     })
 
 
