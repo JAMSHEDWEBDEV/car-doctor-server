@@ -67,6 +67,27 @@ async function run() {
          const result = await bookingCollection.insertOne(booking);
          res.send(result);
     })
+    // update operation started 
+    app.patch('/bookings/:id', async(req,res)=>{
+      const updateBooking = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const options = { upsert: true };
+      const updateBookingData = {
+        $set:{
+          status:updateBooking.status
+        }
+      }
+      const result = await  bookingCollection.updateOne(filter,updateBookingData,options);
+      res.send(result);
+    })
+    // delete operation started 
+    app.delete('/bookings/:id', async(req,res)=>{
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id)};
+        const result = await bookingCollection.deleteOne(query);
+        res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
